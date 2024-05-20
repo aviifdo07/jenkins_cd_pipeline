@@ -116,13 +116,19 @@ pipeline {
 
     // Function to send notification email
     def sendNotification(String stageName, String status) {
-        emailext(
-            to: "${EMAIL_RECIPIENTS}",
-            subject: "${stageName} ${status}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            body: "${stageName} ${status}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}\n\nBuild URL: ${env.BUILD_URL}",
-            mimeType: 'text/plain',
-            attachmentsPattern: '**/*',
-            attachLog: true,
-            compressLog: true
-        )
+        def body = """
+                Build Status: ${buildStatus}
+                Project: ${env.JOB_NAME}
+                Build Number: ${env.BUILD_NUMBER}
+                Build URL: ${env.BUILD_URL}
+                """
+        retry(2) {
+            mail to: "${EMAIL_RECIPIENTS}",
+                subject: subject,
+                body: body,
+                mimeType: 'text/plain',
+                attachmentsPattern: '**/*',
+                attachLog: true,
+                compressLog: true
+        }
     }
