@@ -2,82 +2,127 @@ pipeline {
     agent any
 
     environment {
-        EMAIL_RECIPIENTS = 'adithyashanilka200101704398@gmail.com'
+        // MAVEN_HOME = tool name: 'Maven', type: 'maven'
+        // JDK_HOME = tool name: 'JDK', type: 'jdk'
+        // AWS_DEFAULT_REGION = 'your-aws-region'  // Replace with your AWS region
+        // AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
+        // AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+        EMAIL_RECIPIENTS = 'adithyashanilka200101704398@gmail.com'  // Specify the email address to receive notifications
     }
 
     stages {
         stage('Build') {
             steps {
-                echo 'Building...'
+                echo 'mvn clean install'
+                echo 'Building the code using Maven...'
+                // sh 'mvn clean install'
                 sleep(time: 10, unit: 'SECONDS')
             }
         }
 
-        stage('Test') {
+        stage('Unit and Integration Tests') {
             steps {
-                echo 'Testing...'
+                echo 'mvn test'
+                echo 'Running unit and integration tests...'
+                // sh 'mvn test'
+                sleep(time: 5, unit: 'SECONDS')
+            }
+            post {
+                success {
+                    echo 'Unit and integration tests passed successfully.'
+                    sendNotification('Unit and integration tests', 'SUCCESS')
+                }
+                failure {
+                    echo 'Unit and integration tests failed.'
+                    sendNotification('Unit and integration tests', 'FAILURE')
+                }
+            }
+        }
+
+        stage('Code Analysis') {
+            steps {
+                echo 'sonar-scanner'
+                echo 'Running code analysis...'
+                // Integrate a code analysis tool to analyze your code quality
+                // For example, use SonarQube with SonarScanner
+                // This requires SonarQube server configuration in Jenkins
+                // Example command: sonar-scanner
+                // sh 'sonar-scanner'
+                sleep(time: 5, unit: 'SECONDS')
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                echo 'dependency-check.sh'
+                echo 'Running security scan...'
+                // Perform security scan using a tool like OWASP Dependency-Check
+                // Example command: dependency-check.sh
+                // sh 'dependency-check.sh'
+                sleep(time: 10, unit: 'SECONDS')
+            }
+            post {
+                success {
+                    echo 'Security scan passed successfully.'
+                    sendNotification('Security Scan', 'SUCCESS')
+                }
+                failure {
+                    echo 'Security scan failed.'
+                    sendNotification('Security Scan', 'FAILURE')
+                }
+            }
+        }
+
+        stage('Deploy to Staging') {
+            steps {
+                echo 'aws deploy-to-ec2.sh'
+                echo 'Deploying the application to staging server...'
+                // Example: AWS EC2 deployment
+                // Example command: aws deploy-to-ec2.sh
+                // sh 'aws deploy-to-ec2.sh'
                 sleep(time: 10, unit: 'SECONDS')
             }
         }
 
-        stage('Deploy') {
+        stage('Integration Tests on Staging') {
             steps {
-                echo 'Deploying...'
+                echo 'mvn integration-test'
+                echo 'Running integration tests on staging environment...'
+                // Example: Selenium for UI testing
+                // Example command: mvn integration-test
+                // sh 'mvn integration-test'
+                sleep(time: 5, unit: 'SECONDS')
+            }
+        }
+
+        stage('Deploy to Production') {
+            steps {
+                echo 'aws deploy-to-ec2.sh'
+                echo 'Deploying the application to production server...'
+                // Example: AWS EC2 deployment
+                // Example command: aws deploy-to-ec2.sh
+                // sh 'aws deploy-to-ec2.sh'
+                sleep(time: 10, unit: 'SECONDS')
             }
         }
     }
 
     post {
         always {
-            script {
-                def buildStatus = currentBuild.currentResult ?: 'SUCCESS'
-                def subject = "Build ${buildStatus}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-                def body = """
-                Build Status: ${buildStatus}
-                Project: ${env.JOB_NAME}
-                Build Number: ${env.BUILD_NUMBER}
-                Build URL: ${env.BUILD_URL}
-                """
-                retry(2) {
-                    mail to: "${EMAIL_RECIPIENTS}",
-                         subject: subject,
-                         body: body
-                }
-            }
+            echo 'Pipeline execution finished'
         }
-        failure {
-            script {
-                def buildStatus = currentBuild.currentResult ?: 'FAILURE'
-                def subject = "Build ${buildStatus}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-                def body = """
-                Build Status: ${buildStatus}
-                Project: ${env.JOB_NAME}
-                Build Number: ${env.BUILD_NUMBER}
-                Build URL: ${env.BUILD_URL}
-                """
-                retry(2) {
-                    mail to: "${EMAIL_RECIPIENTS}",
-                         subject: subject,
-                         body: body
-                }
-            }
-        }
-        success {
-            script {
-                def buildStatus = currentBuild.currentResult ?: 'SUCCESS'
-                def subject = "Build ${buildStatus}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-                def body = """
-                Build Status: ${buildStatus}
-                Project: ${env.JOB_NAME}
-                Build Number: ${env.BUILD_NUMBER}
-                Build URL: ${env.BUILD_URL}
-                """
-                retry(2) {
-                    mail to: "${EMAIL_RECIPIENTS}",
-                         subject: subject,
-                         body: body
-                }
-            }
-        }
+    }
+
+    // Function to send notification email
+    def sendNotification(String stageName, String status) {
+        emailext(
+            to: "${EMAIL_RECIPIENTS}",
+            subject: "${stageName} ${status}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: "${stageName} ${status}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}\n\nBuild URL: ${env.BUILD_URL}",
+            mimeType: 'text/plain',
+            attachmentsPattern: '**/*',
+            attachLog: true,
+            compressLog: true
+        )
     }
 }
