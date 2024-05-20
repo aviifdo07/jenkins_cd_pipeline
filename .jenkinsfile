@@ -114,6 +114,7 @@ pipeline {
     }
 }
 
+
 // Function to send notification email
 def sendNotification(String stageName, String status) {
     emailext(
