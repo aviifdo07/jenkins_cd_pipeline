@@ -8,7 +8,6 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // Your build steps go here
                 echo 'Building...'
                 sleep(time: 10, unit: 'SECONDS')
             }
@@ -16,7 +15,6 @@ pipeline {
 
         stage('Test') {
             steps {
-                // Your test steps go here
                 echo 'Testing...'
                 sleep(time: 10, unit: 'SECONDS')
             }
@@ -24,9 +22,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                // Your deploy steps go here
                 echo 'Deploying...'
-                sleep(time: 10, unit: 'SECONDS')
             }
         }
     }
@@ -37,17 +33,16 @@ pipeline {
                 def buildStatus = currentBuild.currentResult ?: 'SUCCESS'
                 def subject = "Build ${buildStatus}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}"
                 def body = """
-                <p>Build Status: ${buildStatus}</p>
-                <p>Project: ${env.JOB_NAME}</p>
-                <p>Build Number: ${env.BUILD_NUMBER}</p>
-                <p>Build URL: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                Build Status: ${buildStatus}
+                Project: ${env.JOB_NAME}
+                Build Number: ${env.BUILD_NUMBER}
+                Build URL: ${env.BUILD_URL}
                 """
-                emailext(
-                    to: "${EMAIL_RECIPIENTS}",
-                    subject: subject,
-                    body: body,
-                    mimeType: 'text/html'
-                )
+                retry(2) {
+                    mail to: "${EMAIL_RECIPIENTS}",
+                         subject: subject,
+                         body: body
+                }
             }
         }
         failure {
@@ -55,17 +50,16 @@ pipeline {
                 def buildStatus = currentBuild.currentResult ?: 'FAILURE'
                 def subject = "Build ${buildStatus}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}"
                 def body = """
-                <p>Build Status: ${buildStatus}</p>
-                <p>Project: ${env.JOB_NAME}</p>
-                <p>Build Number: ${env.BUILD_NUMBER}</p>
-                <p>Build URL: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                Build Status: ${buildStatus}
+                Project: ${env.JOB_NAME}
+                Build Number: ${env.BUILD_NUMBER}
+                Build URL: ${env.BUILD_URL}
                 """
-                emailext(
-                    to: "${EMAIL_RECIPIENTS}",
-                    subject: subject,
-                    body: body,
-                    mimeType: 'text/html'
-                )
+                retry(2) {
+                    mail to: "${EMAIL_RECIPIENTS}",
+                         subject: subject,
+                         body: body
+                }
             }
         }
         success {
@@ -73,17 +67,16 @@ pipeline {
                 def buildStatus = currentBuild.currentResult ?: 'SUCCESS'
                 def subject = "Build ${buildStatus}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}"
                 def body = """
-                <p>Build Status: ${buildStatus}</p>
-                <p>Project: ${env.JOB_NAME}</p>
-                <p>Build Number: ${env.BUILD_NUMBER}</p>
-                <p>Build URL: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                Build Status: ${buildStatus}
+                Project: ${env.JOB_NAME}
+                Build Number: ${env.BUILD_NUMBER}
+                Build URL: ${env.BUILD_URL}
                 """
-                emailext(
-                    to: "${EMAIL_RECIPIENTS}",
-                    subject: subject,
-                    body: body,
-                    mimeType: 'text/html'
-                )
+                retry(2) {
+                    mail to: "${EMAIL_RECIPIENTS}",
+                         subject: subject,
+                         body: body
+                }
             }
         }
     }
