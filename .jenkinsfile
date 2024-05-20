@@ -114,21 +114,23 @@ pipeline {
     }
 }
 
-    // Function to send notification email
-    def sendNotification(String stageName, String status) {
-        def body = """
-                Build Status: ${buildStatus}
+// Function to send notification email
+def sendNotification(String stageName, String status) {
+    def subject = "${stageName} ${status}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+    def body = """
+                Build Status: ${status}
                 Project: ${env.JOB_NAME}
                 Build Number: ${env.BUILD_NUMBER}
                 Build URL: ${env.BUILD_URL}
                 """
-        retry(2) {
-            mail to: "${EMAIL_RECIPIENTS}",
-                subject: subject,
-                body: body,
-                mimeType: 'text/plain',
-                attachmentsPattern: '**/*',
-                attachLog: true,
-                compressLog: true
-        }
+
+    retry(2) {
+        mail to: "${EMAIL_RECIPIENTS}",
+             subject: subject,
+             body: body,
+             mimeType: 'text/plain',
+             attachmentsPattern: '**/*',
+             attachLog: true,
+             compressLog: true
     }
+}
