@@ -112,6 +112,7 @@ pipeline {
             echo 'Pipeline execution finished'
         }
     }
+}
 
     // Function to send notification email
     def sendNotification(String stageName, String status) {
@@ -125,4 +126,3 @@ pipeline {
             compressLog: true
         )
     }
-}
