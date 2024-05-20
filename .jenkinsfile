@@ -1,0 +1,87 @@
+pipeline {
+    agent any
+
+    environment {
+        EMAIL_RECIPIENTS = 'adithyashanilka200101704398@gmail.com'
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                // Your build steps go here
+                echo 'Building...'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // Your test steps go here
+                echo 'Testing...'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                // Your deploy steps go here
+                echo 'Deploying...'
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                def buildStatus = currentBuild.currentResult ?: 'SUCCESS'
+                def subject = "Build ${buildStatus}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                def body = """
+                <p>Build Status: ${buildStatus}</p>
+                <p>Project: ${env.JOB_NAME}</p>
+                <p>Build Number: ${env.BUILD_NUMBER}</p>
+                <p>Build URL: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                """
+                emailext(
+                    to: "${EMAIL_RECIPIENTS}",
+                    subject: subject,
+                    body: body,
+                    mimeType: 'text/html'
+                )
+            }
+        }
+        failure {
+            script {
+                def buildStatus = currentBuild.currentResult ?: 'FAILURE'
+                def subject = "Build ${buildStatus}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                def body = """
+                <p>Build Status: ${buildStatus}</p>
+                <p>Project: ${env.JOB_NAME}</p>
+                <p>Build Number: ${env.BUILD_NUMBER}</p>
+                <p>Build URL: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                """
+                emailext(
+                    to: "${EMAIL_RECIPIENTS}",
+                    subject: subject,
+                    body: body,
+                    mimeType: 'text/html'
+                )
+            }
+        }
+        success {
+            script {
+                def buildStatus = currentBuild.currentResult ?: 'SUCCESS'
+                def subject = "Build ${buildStatus}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                def body = """
+                <p>Build Status: ${buildStatus}</p>
+                <p>Project: ${env.JOB_NAME}</p>
+                <p>Build Number: ${env.BUILD_NUMBER}</p>
+                <p>Build URL: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                """
+                emailext(
+                    to: "${EMAIL_RECIPIENTS}",
+                    subject: subject,
+                    body: body,
+                    mimeType: 'text/html'
+                )
+            }
+        }
+    }
+}
