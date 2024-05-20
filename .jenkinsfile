@@ -122,15 +122,17 @@ def sendNotification(String stageName, String status) {
                 Project: ${env.JOB_NAME}
                 Build Number: ${env.BUILD_NUMBER}
                 Build URL: ${env.BUILD_URL}
+                Stage: ${stageName}
                 """
 
-    retry(2) {
-        mail to: "${EMAIL_RECIPIENTS}",
-             subject: subject,
-             body: body,
-             mimeType: 'text/plain',
-             attachmentsPattern: '**/*',
-             attachLog: true,
-             compressLog: true
-    }
+    // Create a log file and attach it to the email
+    def logFile = "${env.BUILD_ID}.log"
+    writeFile file: logFile, text: "${body}"
+
+    mail to: "${EMAIL_RECIPIENTS}",
+            subject: subject,
+            body: body,
+            mimeType: 'text/plain',
+            attachmentsPattern: '**/*',
+            attachments: logFile
 }
