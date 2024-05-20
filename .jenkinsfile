@@ -116,23 +116,13 @@ pipeline {
 
 // Function to send notification email
 def sendNotification(String stageName, String status) {
-    def subject = "${stageName} ${status}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-    def body = """
-                Build Status: ${status}
-                Project: ${env.JOB_NAME}
-                Build Number: ${env.BUILD_NUMBER}
-                Build URL: ${env.BUILD_URL}
-                Stage: ${stageName}
-                """
-
-    // Create a log file and attach it to the email
-    def logFile = "${env.BUILD_ID}.log"
-    writeFile file: logFile, text: "${body}"
-
-    mail to: "${EMAIL_RECIPIENTS}",
-            subject: subject,
-            body: body,
+    emailext(
+            to: "${EMAIL_RECIPIENTS}",
+            subject: "${stageName} ${status}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: "${stageName} ${status}: Job ${env.JOB_NAME} #${env.BUILD_NUMBER}\n\nBuild URL: ${env.BUILD_URL}",
             mimeType: 'text/plain',
             attachmentsPattern: '**/*',
-            attachments: logFile
+            attachLog: true,
+            compressLog: true
+        )
 }
